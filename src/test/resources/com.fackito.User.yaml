@@ -1,0 +1,26 @@
+# Fake User
+---
+default:
+  name: ${name.name}
+  age: 31
+  phoneNumber: ${phoneNumber.phoneNumber}
+  address:
+    line1: My Address Line 1
+    line2: Address line 2
+    city: Washington D.C.
+    zip: 20000
+  roles:
+    - ${lorem.word}
+    - ${lorem.word}
+over_30:
+  name: ${name}
+  age: 31
+  phoneNumber: ${phoneNumber.phoneNumber}
+  address:
+    line1: My Address Line 1
+    line2: Address line 2
+    city: Washington D.C.
+    zip: 20000
+  roles:
+    - ${loremWord}
+    - ${loremWord}
