@@ -29,7 +29,6 @@ public class FakitoTest {
         assertThat(fake.getAddress(), hasEntry("line2", "Address line 2"));
         assertThat(fake.getAddress(), hasEntry(equalTo("zip"), equalTo((Object) 20000)));
         assertThat(fake.getAddress(), hasEntry("city", "Washington D.C."));
-        System.out.println(fake.getPhoneNumber());
         assertThat(fake.getPhoneNumber(), is(notNullValue()));
     }
 }

@@ -1,6 +1,8 @@
 # fackito
 Stubs Java objects with Fake data using the [Mockito framework](https://github.com/mockito/mockito) and 
 [Faker](https://github.com/blocoio/faker) (A Java port of the Faker ruby gem: [faker](https://github.com/stympy/faker))
+
+[![Build Status](https://travis-ci.org/fackito/fackito.svg?branch=master)](https://travis-ci.org/fackito/fackito) [![MIT License](http://img.shields.io/badge/license-MIT-green.svg) ](https://github.com/fackito/fackito/blob/master/LICENSE)
 ## Why?
 Fackito's makes testing easier and better! by
 1. increasing test development speed and
@@ -116,6 +118,35 @@ All the above is triggered just by calling fake:
 
     User user = fake(User.class); // uses the "default" identifier
     User anotherUser = fake(User.class, "anotherUser); // uses the "anotherUser" identifier
+
+## Setup
+
+Download the library
+
+Maven:
+
+    <repository>
+        <id>oss-sonatype</id>
+        <name>oss-sonatype</name>
+        <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+
+    <dependency>
+        <groupId>com.fackito</groupId>
+        <artifactId>fackito</artifactId>
+        <version>1.0.0.SNAPSHOT</version>
+        <scope>test</scope>
+    </dependency>
+
+Gradle:
+
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+
+    classpath 'com.fackito:fackito:1.0.0.SNAPSHOT'
+
 
 ## Usage
 
