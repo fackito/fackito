@@ -7,7 +7,6 @@ package com.fackito;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static com.fackito.FackitoFaker.getFake;
 import static com.fackito.FackitoFakerFactory.*;
 import static com.fackito.FackitoUtil.getFakeableAttribute;
 import static org.mockito.Mockito.*;
@@ -20,12 +19,12 @@ public class Fackito {
     /**
      * Creates a DEFAULT fake mock.
      *
-     * @param classToMock
+     * @param classToFake
      * @param <T>
      * @return
      */
-    public static <T> T fake(Class<T> classToMock) {
-        return fake(classToMock, DEFAULT_FAKE);
+    public static <T> T fake(Class<T> classToFake) {
+        return fake(classToFake, DEFAULT_FAKE);
     }
 
     /**
@@ -45,13 +44,14 @@ public class Fackito {
                 final String fakeMethodName = fakeMethod.getName();
                 if (FackitoUtil.isMethodFakeable(fakeMethodName)) {
                     Object fakeValue = fakeResources.get(getFakeableAttribute(fakeMethodName));
+                    FackitoFaker fackitoFaker = new FackitoFaker();
                     if (fakeValue instanceof String) {
-                        fakeValue = FackitoFaker.getFake(fakeValue);
+                        fakeValue = fackitoFaker.getFake((String) fakeValue);
                     } else if (fakeValue instanceof List) {
                         List<Object> list = (List<Object>) fakeValue;
                         for (int x = 0; x < list.size(); x++) {
                             Object item = list.get(x);
-                            list.set(x, getFake(item));
+                            list.set(x, fackitoFaker.getFake((String) item));
                         }
                     }
                     when(fakeMethod.invoke(fake)).thenReturn(fakeValue);
