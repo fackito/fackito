@@ -4,6 +4,8 @@
  */
 package com.fackito;
 
+import com.fackito.definition.DefinitionItemValueMapper;
+
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -44,14 +46,14 @@ public class Fackito {
                 final String fakeMethodName = fakeMethod.getName();
                 if (FackitoUtil.isMethodFakeable(fakeMethodName)) {
                     Object fakeValue = fakeResources.get(getFakeableAttribute(fakeMethodName));
-                    FackitoFaker fackitoFaker = new FackitoFaker();
+                    DefinitionItemValueMapper definitionItemValueMapper = new DefinitionItemValueMapper();
                     if (fakeValue instanceof String) {
-                        fakeValue = fackitoFaker.getFake((String) fakeValue);
+                        fakeValue = definitionItemValueMapper.read((String) fakeValue);
                     } else if (fakeValue instanceof List) {
                         List<Object> list = (List<Object>) fakeValue;
                         for (int x = 0; x < list.size(); x++) {
                             Object item = list.get(x);
-                            list.set(x, fackitoFaker.getFake((String) item));
+                            list.set(x, definitionItemValueMapper.read((String) item));
                         }
                     }
                     when(fakeMethod.invoke(fake)).thenReturn(fakeValue);
