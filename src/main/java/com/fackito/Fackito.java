@@ -4,17 +4,18 @@
  */
 package com.fackito;
 
-import com.fackito.definition.DefinitionItemValueMapper;
+import com.fackito.definition.Definition;
 
 import java.lang.reflect.Method;
-import java.util.*;
 
-import static com.fackito.FackitoFakerFactory.*;
-import static com.fackito.FackitoUtil.getFakeableAttribute;
-import static org.mockito.Mockito.*;
+import static com.fackito.definition.Definition.DEFINITION_NAME_DEFAULT;
+import static com.fackito.mockito.MockitoStubber.stub;
+import static org.mockito.Mockito.mock;
 
 /**
  * The Fackito library extends the Mockito library by generating fake mocks.
+ *
+ * @author JC Carrillo
  */
 public class Fackito {
 
@@ -22,46 +23,24 @@ public class Fackito {
      * Creates a DEFAULT fake mock.
      *
      * @param classToFake
-     * @param <T>
+     * @param <F>
      * @return
      */
-    public static <T> T fake(Class<T> classToFake) {
-        return fake(classToFake, DEFAULT_FAKE);
+    public static <F> F fake(Class<F> classToFake) {
+        return fake(classToFake, DEFINITION_NAME_DEFAULT);
     }
 
     /**
      * Creates a fake mock using the name provided.
      *
      * @param classToFake
-     * @param name
-     * @param <T>
+     * @param definitionName
+     * @param <F>
      * @return
      */
-    public static <T> T fake(Class<T> classToFake, String name) {
-        try {
-            final Map<String, String> fakeResources = getFakeData(classToFake, name);
-            Method[] fakeMethods = classToFake.getMethods();
-            final T fake = mock(classToFake);
-            for (Method fakeMethod : fakeMethods) {
-                final String fakeMethodName = fakeMethod.getName();
-                if (FackitoUtil.isMethodFakeable(fakeMethodName)) {
-                    Object fakeValue = fakeResources.get(getFakeableAttribute(fakeMethodName));
-                    DefinitionItemValueMapper definitionItemValueMapper = new DefinitionItemValueMapper();
-                    if (fakeValue instanceof String) {
-                        fakeValue = definitionItemValueMapper.read((String) fakeValue);
-                    } else if (fakeValue instanceof List) {
-                        List<Object> list = (List<Object>) fakeValue;
-                        for (int x = 0; x < list.size(); x++) {
-                            Object item = list.get(x);
-                            list.set(x, definitionItemValueMapper.read((String) item));
-                        }
-                    }
-                    when(fakeMethod.invoke(fake)).thenReturn(fakeValue);
-                }
-            }
-            return fake;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public static <F> F fake(Class<F> classToFake, String definitionName) {
+        F mock = mock(classToFake);
+        final Method[] methodsToMock = classToFake.getMethods();
+        return stub(mock, methodsToMock, new Definition(classToFake, definitionName));
     }
 }
