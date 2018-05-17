@@ -4,12 +4,10 @@
  */
 package com.fackito.mockito;
 
-import com.fackito.FackitoUtil;
 import com.fackito.definition.Definition;
 
 import java.lang.reflect.*;
 
-import static com.fackito.FackitoUtil.getFakeableAttribute;
 import static org.mockito.Mockito.when;
 
 /**
@@ -23,7 +21,7 @@ public class MockitoStubber {
         try {
             for (Method method : methods) {
                 final String methodToMockName = method.getName();
-                if (FackitoUtil.isMethodFakeable(methodToMockName)) {
+                if (isMethodFakeable(methodToMockName)) {
                     final String definitionItemName = getFakeableAttribute(methodToMockName);
                     if (definitionItems.exists(definitionItemName)) {
                         final Object value = definitionItems.getValue(definitionItemName);
@@ -35,5 +33,14 @@ public class MockitoStubber {
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
+    }
+
+    private static boolean isMethodFakeable(String method) {
+        return method.startsWith("get") && !method.equals("getClass");
+    }
+
+    private static String getFakeableAttribute(String method) {
+        String fakeAttributeName = method.replace("get", "");
+        return Character.toLowerCase(fakeAttributeName.charAt(0)) + fakeAttributeName.substring(1);
     }
 }
