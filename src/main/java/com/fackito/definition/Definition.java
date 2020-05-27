@@ -4,26 +4,31 @@
  */
 package com.fackito.definition;
 
+import com.fackito.definition.parser.DefinitionProvider;
+import com.fackito.exceptions.base.FackitoInitializationException;
+
 import java.util.*;
 import java.util.concurrent.Callable;
 
-import static com.fackito.definition.DefinitionItemValueCallables.definitionItemValueCallable;
 import static java.util.Map.Entry;
 
 /**
- * The class {@code Definition} is a representation of a single definition.
+ * The class {@code Definition} is a representation of a single mock definition.
  *
  * @author JC Carrillo
  */
-public class Definition {
+public class Definition<T> {
 
     public static final String DEFINITION_NAME_DEFAULT = "default";
-    private final DefinitionParser definitionParser;
-    private final Map<String, Callable<Object>> definitionItems = new HashMap();
+    private final DefinitionConfig<T> definitionConfig = DefinitionConfig.of();
+    private final Map<String, Callable<Object>> definitionItems = new HashMap<>();
 
-    public Definition(Class<?> classToFake, String definitionName) {
-        definitionParser = new DefinitionYamlParser();
+    private Definition(Class<T> classToFake, String definitionName) {
         initialize(classToFake, definitionName);
+    }
+
+    public static <T> Definition<T> of(Class<T> classToFake, String definitionName) {
+        return new Definition<>(classToFake, definitionName);
     }
 
     /**
@@ -33,12 +38,15 @@ public class Definition {
      * @param classToFake
      * @param definitionName
      */
-    private void initialize(Class<?> classToFake, String definitionName) {
-        final Map<String, Object> definition = definitionParser.getDefinition(classToFake, definitionName);
-        for (Entry<String, Object> entry : definition.entrySet()) {
-            final String key = entry.getKey();
-            final Callable<Object> value = definitionItemValueCallable(entry.getValue());
-            definitionItems.put(key, value);
+    private void initialize(Class<T> classToFake, String definitionName) {
+        DefinitionProvider<T> definitionProvider = definitionConfig.getDefinitionProvider();
+        final Map<String, T> definition = definitionProvider.getDefinition(classToFake, definitionName);
+        if (definition == null) {
+            throw new FackitoInitializationException("No definition found for : " + classToFake);
+        }
+        DefinitionItemValueCallables callables = new DefinitionItemValueCallables();
+        for (Entry<String, T> entry : definition.entrySet()) {
+            definitionItems.put(entry.getKey(), callables.definitionItemValueCallable(entry.getValue()));
         }
     }
 

@@ -1,17 +1,20 @@
 # Fake User
 ---
-default:
-  name: ${name.name}
+default: &hardcoded_user
+  name: Some Name
   age: 31
-  phoneNumber: ${phoneNumber.phoneNumber}
+  phoneNumber: (111) 222-3333
   address:
     line1: My Address Line 1
     line2: Address line 2
     city: Washington D.C.
     zip: 20000
   roles:
-    - ${lorem.word}
-    - ${lorem.word}
+    - Role 1
+    - Role 2
+random_name:
+  <<: *hardcoded_user
+  name: ${name.name}
 over_30:
   name: ${name}
   age: 31

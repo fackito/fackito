@@ -4,11 +4,16 @@
  */
 package com.fackito.definition;
 
+import com.fackito.exceptions.base.NoFakerFoundException;
+import com.fackito.faker.FakerCallable;
+import com.fackito.faker.FakerReflectionAttributes;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.regex.*;
+import java.util.stream.Collectors;
 
-import static com.fackito.faker.FakerCallables.fakerCallable;
+import static com.fackito.faker.FakerCallableImpl.*;
 
 /**
  * The class {@code DefinitionItemValueCallables} provides methods that return {@link Callable} objects
@@ -16,30 +21,7 @@ import static com.fackito.faker.FakerCallables.fakerCallable;
  *
  * @author JC Carrillo
  */
-public class DefinitionItemValueCallables {
-
-    public static final Pattern pattern = Pattern.compile("\\$\\{(.*?)\\}");
-
-    /**
-     * Creates fake definition item values.
-     *
-     * @param string parsable pattern for fake values.
-     * @return {@link Callable} definition item value.
-     */
-    public static Callable<Object> definitionItemValueCallable(String string) {
-        Matcher matcher = pattern.matcher(string);
-        if (!matcher.find()) {
-            return () -> string;
-        }
-        String fakerString = matcher.group(1);
-        final String[] split = fakerString.split("\\.");
-        if (split == null || split.length != 2) {
-            throw new IllegalArgumentException("Invalid Definition Item Value");
-        }
-        String fieldName = split[0];
-        String methodName = split[1];
-        return fakerCallable(fieldName, methodName);
-    }
+class DefinitionItemValueCallables {
 
     /**
      * Agnostic {@link Callable}.
@@ -48,21 +30,38 @@ public class DefinitionItemValueCallables {
      * @param object parsable pattern for fake values.
      * @return {@link Callable} definition item value.
      */
-    public static Callable<Object> definitionItemValueCallable(Object object) {
+    public Callable<Object> definitionItemValueCallable(Object object) {
+        final Callable<Object> callable;
         if (object instanceof String) {
-            return definitionItemValueCallable((String) object);
-        } else if (object instanceof List) {
-            List<Object> list = (List<Object>) object;
-            for (int x = 0; x < list.size(); x++) {
-                try {
-                    list.set(x, definitionItemValueCallable((String) list.get(x)).call());
-                } catch (Exception e) {
-                    throw new IllegalArgumentException(e.getMessage(), e);
-                }
-            }
-            return () -> list;
+            callable = definitionItemValueCallable((String) object);
         } else {
-            return () -> object;
+            final Object objectToReturn;
+            if (object instanceof Collection) {
+                objectToReturn = ((Collection<Object>) object).stream()
+                        .map(obj -> (String) obj)
+                        .map(this::definitionItemValueCallable)
+                        .map(call -> (FakerCallable) call)
+                        .map(FakerCallable::call)
+                        .collect(Collectors.toList());
+            } else {
+                objectToReturn = object;
+            }
+            callable = () -> objectToReturn;
+        }
+        return callable;
+    }
+
+    /**
+     * Creates fake definition item values.
+     *
+     * @param string parsable pattern for fake values.
+     * @return {@link Callable} definition item value.
+     */
+    private Callable<Object> definitionItemValueCallable(String string) {
+        try {
+            return newBuilder().build(FakerReflectionAttributes.newBuilder().build(string));
+        } catch (NoFakerFoundException e) {
+            return (FakerCallable) () -> string;
         }
     }
 }
