@@ -1,3 +1,5 @@
 language: java
 after_success:
-- mvn deploy --settings .travis/settings.xml
+  - if ([ "$TRAVIS_BRANCH" == "master" ] || [ ! -z "$TRAVIS_TAG" ]) && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    mvn deploy --settings .travis/settings.xml;
+    fi
