@@ -2,23 +2,24 @@
  * Copyright (c) 2018 Fackito
  * This program is made available under the terms of the MIT License.
  */
-package com.fackito.definition;
+package com.fackito.definition.parser;
 
 import java.util.Map;
 
 /**
- * The {@link DefinitionParser} class provides a {@link Map} of definition items.
+ * The {@link DefinitionProvider} class provides a representation of the provided {@link Class}.
  *
  * @author JC Carrillo
  */
-public interface DefinitionParser {
+@FunctionalInterface
+public interface DefinitionProvider<T> {
 
     /**
      * Provides a {@link Map} of definition items.
      *
      * @param clazz the class to define
-     * @param key   the definition name
+     * @param name  the definition name
      * @return a {@link Map} of definition items.
      */
-    Map<String, Object> getDefinition(Class<?> clazz, String key);
+    Map<String, T> getDefinition(Class<T> clazz, String name);
 }

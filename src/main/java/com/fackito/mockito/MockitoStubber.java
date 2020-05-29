@@ -5,10 +5,14 @@
 package com.fackito.mockito;
 
 import com.fackito.definition.Definition;
+import com.fackito.predicates.IsMethodFakeable;
 
 import java.lang.reflect.*;
+import java.util.function.Predicate;
 
-import static org.mockito.Mockito.when;
+import static java.lang.Character.*;
+import static java.util.Arrays.*;
+import static java.util.Optional.*;
 
 /**
  * The class {@code MockitoStubber} stubs a {@link org.mockito.Mockito} mock with definition items.
@@ -17,30 +21,22 @@ import static org.mockito.Mockito.when;
  */
 public class MockitoStubber {
 
-    public static <T> T stub(T mock, Method[] methods, Definition definitionItems) {
-        try {
-            for (Method method : methods) {
-                final String methodToMockName = method.getName();
-                if (isMethodFakeable(methodToMockName)) {
-                    final String definitionItemName = getFakeableAttribute(methodToMockName);
-                    if (definitionItems.exists(definitionItemName)) {
-                        final Object value = definitionItems.getValue(definitionItemName);
-                        when(method.invoke(mock)).thenReturn(value);
-                    }
-                }
-            }
-            return mock;
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
+    private static final Predicate<Method> IS_METHOD_FAKEABLE = IsMethodFakeable.of();
+
+    private MockitoStubber() {
     }
 
-    private static boolean isMethodFakeable(String method) {
-        return method.startsWith("get") && !method.equals("getClass");
-    }
-
-    private static String getFakeableAttribute(String method) {
-        String fakeAttributeName = method.replace("get", "");
-        return Character.toLowerCase(fakeAttributeName.charAt(0)) + fakeAttributeName.substring(1);
+    public static <T> T stub(final T mock, final Method[] methods, final Definition<T> definition) {
+        stream(methods)
+                .filter(IS_METHOD_FAKEABLE)
+                .forEach(method ->
+                        of(method.getName())
+                                .map(name -> name.replace("get", ""))
+                                .map(name -> toLowerCase(name.charAt(0)) + name.substring(1))
+                                .filter(definition::exists)
+                                .map(definition::getValue)
+                                .map(value -> WhenStub.newBuilder().build(value, mock, MethodStubBuilder.newBuilder().build(method)))
+                                .ifPresent(WhenStub::stub));
+        return mock;
     }
 }
